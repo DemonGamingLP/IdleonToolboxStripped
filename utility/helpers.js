@@ -1,5 +1,5 @@
 import { format, getDaysInMonth, getDaysInYear, intervalToDuration, isValid } from 'date-fns';
-import { drawerPages } from '@components/constants';
+import { drawerPages } from '../components/constants';
 import merge from 'lodash.merge';
 
 export const downloadFile = (data, filename) => {

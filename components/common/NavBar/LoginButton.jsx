@@ -5,6 +5,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import Button from '@mui/material/Button';
 import { AppContext } from '../context/AppProvider';
 import LoginDialog from './LoginDialog';
+import { navBarHeight } from '../../../components/constants';
 
 const LoginButton = () => {
   const { state, logout } = useContext(AppContext);
@@ -22,7 +23,8 @@ const LoginButton = () => {
     logout();
   }
 
-  return <Box sx={{ marginLeft: 'auto' }}>
+  // @ts-ignore
+  return <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: navBarHeight }}>
     {!state?.signedIn ? <Button sx={{ color: 'white', '&:hover': { borderColor: 'white' } }}
                                 onClick={handleLogin}
                                 startIcon={<LoginIcon/>}>Login</Button> :
