@@ -35,42 +35,17 @@ const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, {}, undefined);
   const value = useMemo(() => ({ state, dispatch }), [state, dispatch]);
 
-  const router = useRouter();
   const [authCounter, setAuthCounter] = useState(0);
   const [waitingForAuth, setWaitingForAuth] = useState(false);
   const [listener, setListener] = useState({ func: null });
 
 
   useEffect(() => {
-    if (!router.isReady) return;
-    const handleProfile = async () => {
-      try {
-        const content = await getProfile({ mainChar: router?.query?.profile });
-        if (!content) {
-          throw new Error('Failed to load data from profile api');
-        }
-        let parsedData;
-        const { parseData } = await import('@parsers/index');
-        parsedData = parseData(content);
-        localStorage.setItem('manualImport', JSON.stringify(false));
-        let importData = {
-          ...parsedData,
-          profile: true,
-          manualImport: false,
-          signedIn: false
-        };
-        dispatch({ type: 'data', data: { ...importData } })
-      } catch (e) {
-        console.error('Failed to load data from profile api', e);
-        router.push({ pathname: '/', query: router.query });
-      }
-    }
-
+    // if (!router.isReady) return;
     let unsubscribe;
     (async () => {
-      if (router?.query?.profile) {
-        await handleProfile()
-      } else if (!state?.signedIn) {
+      if (!state?.signedIn) {
+        console.log("use Effect in appProvider")
         const user = await checkUserStatus();
         if (!state?.account && user) {
           unsubscribe = await subscribe(user?.uid, user?.accessToken, handleCloudUpdate);
@@ -133,7 +108,7 @@ const AppProvider = ({ children }) => {
     waitingForAuth ? authCounter === 0 ? 1000 : 4000 : null
   );
 
-  const logout = (manualImport, data) => {
+  const logout = () => {
     typeof listener.func === 'function' && listener.func();
     userSignOut();
     if (typeof window?.gtag !== 'undefined') {
@@ -147,18 +122,9 @@ const AppProvider = ({ children }) => {
     localStorage.removeItem('rawJson');
     dispatch({ type: 'logout' });
     setWaitingForAuth(false);
-    if (!manualImport) {
-      router.push({ pathname: '/', query: router.query });
-    } else {
-      dispatch({ type: 'data', data });
-    }
   };
 
   const handleCloudUpdate = async (data, serverVars, uid, accessToken) => {
-    if (router?.query?.profile) {
-      const { profile, ...rest } = router.query
-      router.replace({ query: rest })
-    }
     console.info('rawData', {
       data,
       serverVars
@@ -185,7 +151,7 @@ const AppProvider = ({ children }) => {
   };
 
   const shouldDisplayPage = () => {
-    return value?.state?.account || router.pathname === '/';
+    return value?.state?.account;
   }
 
   return (
